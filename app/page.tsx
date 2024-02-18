@@ -1,5 +1,11 @@
-import { CollaborativeApp } from "./CollaborativeApp";
+"use client";
+
+import Live from "@/components/cursor/Live";
 
 export default function Page() {
-  return <CollaborativeApp />;
+  return (
+    <div className="">
+      <Live />
+    </div>
+  );
 }
