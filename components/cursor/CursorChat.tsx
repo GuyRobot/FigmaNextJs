@@ -24,7 +24,7 @@ const CursorChat = ({
         previousMessage: cursorState.message,
         message: "",
       });
-    } else {
+    } else if (e.key === "Escape") {
       setCursorState({
         mode: CursorMode.Hidden,
       });
