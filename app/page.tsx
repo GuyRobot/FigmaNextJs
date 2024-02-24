@@ -16,7 +16,9 @@ import {
   renderCanvas,
 } from "@/lib/canvas";
 import { ActiveElement } from "@/types/type";
-import { useMutation, useStorage } from "@/liveblocks.config";
+import { useMutation, useRedo, useStorage, useUndo } from "@/liveblocks.config";
+import { defaultNavElement } from "@/constants";
+import { handleDelete, handleKeyDown } from "@/lib/key-events";
 
 export default function Page() {
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
@@ -32,10 +34,41 @@ export default function Page() {
     icon: "",
   });
 
+  const deleteAllShapes = useMutation(({ storage }) => {
+    const canvasObjects = storage.get("canvasObjects");
+    if (!canvasObjects || canvasObjects.size === 0) {
+      return true;
+    }
+
+    for (const [key, value] of canvasObjects.entries()) {
+      canvasObjects.delete(key);
+    }
+  }, []);
+
+  const deleteShapeFromStorage = useMutation(({ storage }, objectId) => {
+    const canvasObjects = storage.get("canvasObjects");
+    canvasObjects.delete(objectId);
+  }, []);
+
   const handleActiveElement = (element: ActiveElement) => {
     setActiveElement(element);
+    switch (element?.value) {
+      case "reset":
+        deleteAllShapes();
+        fabricRef.current?.clear();
+        setActiveElement(defaultNavElement);
+        break;
+      case "delete":
+        handleDelete(fabricRef.current as any, deleteShapeFromStorage);
+        setActiveElement(defaultNavElement);
+      default:
+        break;
+    }
     selectedShapeRef.current = element?.value as string;
   };
+
+  const undo = useUndo();
+  const redo = useRedo();
 
   useEffect(() => {
     const canvas = initializeFabric({ fabricRef, canvasRef });
@@ -83,6 +116,21 @@ export default function Page() {
     window.addEventListener("resize", () => {
       handleResize({ canvas: fabricRef.current });
     });
+
+    window.addEventListener("keydown", (e: any) => {
+      handleKeyDown({
+        e,
+        canvas,
+        undo,
+        redo,
+        syncShapeInStorage,
+        deleteShapeFromStorage,
+      });
+    });
+
+    return () => {
+      canvas.dispose();
+    };
   }, []);
 
   const canvasObjects = useStorage((root) => root.canvasObjects);
@@ -106,7 +154,7 @@ export default function Page() {
         activeElement={activeElement}
         handleActiveElement={handleActiveElement}
       />
-      <LeftSidebar />
+      <LeftSidebar allShapes={Array.from(canvasObjects)} />
       <section className="flex flex-row h-full">
         <Live />
       </section>
