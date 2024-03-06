@@ -11,6 +11,7 @@ import CursorChat from "./CursorChat";
 import ReactionSelector from "../reaction/ReactionButton";
 import FlyingReaction from "../reaction/FlyingReaction";
 import useInterval from "@/hooks/useInterval";
+import { Comments } from "../comments/Comments";
 
 const Live = () => {
   const others = useOthers();
@@ -189,6 +190,8 @@ const Live = () => {
       )}
 
       <LiveCursors others={others} />
+
+      <Comments />
     </div>
   );
 };
