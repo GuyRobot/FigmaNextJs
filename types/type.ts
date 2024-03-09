@@ -10,12 +10,12 @@ export enum CursorMode {
 
 export type CursorState =
   | {
-      mode: CursorMode.Hidden;
-    }
-  | {
       mode: CursorMode.Chat;
       message: string;
       previousMessage: string | null;
+    }
+  | {
+      mode: CursorMode.Hidden;
     }
   | {
       mode: CursorMode.ReactionSelector;
